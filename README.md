@@ -1,2 +1,2 @@
-# Student-Career-Management-System
-This is a student career management system which tracks student academic record like marks skills mistakes and also gives AI suggestions.
+Student-Career-Management-System
+The Student Career Management System is a modern educational tool that helps students monitor their academic progress, identify weak areas, and receive personalized improvement suggestions. It combines data tracking, analytics, and artificial intelligence to support smarter learning decisions.
