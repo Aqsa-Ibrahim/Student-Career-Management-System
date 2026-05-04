@@ -1,0 +1,71 @@
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
+from .models import Marks
+import openai
+
+openai.api_key = "YOUR_API_KEY"
+
+# 🔐 LOGIN
+@api_view(['POST'])
+def login_view(request):
+    username = request.data.get("username")
+    password = request.data.get("password")
+
+    user = authenticate(username=username, password=password)
+
+    if user:
+        return Response({"message": "Login successful"})
+    return Response({"error": "Invalid credentials"}, status=400)
+
+# ➕ ADD MARKS
+@api_view(['POST'])
+def add_marks(request):
+    user = User.objects.get(username=request.data['username'])
+
+    Marks.objects.create(
+        user=user,
+        subject=request.data['subject'],
+        marks=request.data['marks'],
+        total=request.data['total']
+    )
+
+    return Response({"message": "Marks added"})
+
+# 📊 PERFORMANCE
+@api_view(['GET'])
+def performance(request):
+    username = request.GET.get("username")
+    user = User.objects.get(username=username)
+
+    data = Marks.objects.filter(user=user)
+
+    result = []
+    for d in data:
+        percent = (d.marks/d.total)*100
+        result.append({"subject": d.subject, "percentage": percent})
+
+    return Response(result)
+
+# 🤖 AI SUGGESTIONS
+@api_view(['GET'])
+def ai_suggestions(request):
+    username = request.GET.get("username")
+    user = User.objects.get(username=username)
+
+    marks = Marks.objects.filter(user=user)
+
+    summary = ""
+    for m in marks:
+        summary += f"{m.subject}: {m.marks}/{m.total}\n"
+
+    response = openai.ChatCompletion.create(
+        model="gpt-4o-mini",
+        messages=[{
+            "role": "user",
+            "content": f"Analyze this student data and suggest improvements:\n{summary}"
+        }]
+    )
+
+    return Response({"suggestion": response['choices'][0]['message']['content']})The Student Career Management System is a modern educational tool that helps students monitor their academic progress, identify weak areas, and receive personalized improvement suggestions. It combines data tracking, analytics, and artificial intelligence to support smarter learning decisions.
